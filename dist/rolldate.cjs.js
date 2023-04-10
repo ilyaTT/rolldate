@@ -290,9 +290,13 @@ Rolldate.prototype = {
       if (typeof fn == 'function') {
         el.addEventListener('touchstart', touchstart);
         el.addEventListener('touchend', touchend);
+        el._tapListeners = {
+          touchstart: touchstart,
+          touchend: touchend
+        };
       } else {
-        el.removeEventListener('touchstart', touchstart);
-        el.removeEventListener('touchend', touchend);
+        el.removeEventListener('touchstart', el._tapListeners.touchstart);
+        el.removeEventListener('touchend', el._tapListeners.touchend);
       }
     } else {
       var click = function click(e) {
@@ -300,8 +304,9 @@ Rolldate.prototype = {
       };
       if (typeof fn == 'function') {
         el.addEventListener('click', click);
+        el._clickListener = click;
       } else {
-        el.removeEventListener('click', click);
+        el.removeEventListener('click', el._clickListener);
       }
     }
   },
