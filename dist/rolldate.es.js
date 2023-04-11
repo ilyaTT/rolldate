@@ -342,6 +342,52 @@ Rolldate.prototype = {
       _this.destroy(flag);
     }
   },
+  confirmFunc: function confirmFunc() {
+    var _this = this;
+    var config = _this.config,
+        el = void 0,
+        date = config.format,
+        newDate = new Date();
+
+    for (var f in _this.scroll) {
+      var d = _this.getSelected(_this.scroll[f]);
+
+      date = date.replace(f, d);
+      if (f == 'YYYY') {
+        newDate.setFullYear(d);
+      } else if (f == 'MM') {
+        newDate.setMonth(d - 1);
+      } else if (f == 'DD') {
+        newDate.setDate(d);
+      } else if (f == 'hh') {
+        newDate.setHours(d);
+      } else if (f == 'mm') {
+        newDate.setMinutes(d);
+      } else if (f == 'ss') {
+        newDate.setSeconds(d);
+      }
+    }
+    if (config.confirm) {
+      var flag = config.confirm.call(_this, date);
+      if (flag === false) {
+        return false;
+      } else if (flag) {
+        date = flag;
+      }
+    }
+    if (config.el) {
+      el = $(config.el);
+      if (el.nodeName.toLowerCase() == 'input') {
+        el.value = date;
+      } else {
+        el.innerText = date;
+      }
+      el.bindDate = newDate;
+    } else {
+      _this.bindDate = newDate;
+    }
+    _this.hide();
+  },
   event: function event() {
     var _this = this,
         mask = $('.rolldate-mask'),
@@ -354,51 +400,7 @@ Rolldate.prototype = {
     _this.tap(cancel, function () {
       _this.hide(1);
     });
-    _this.tap(confirm, function () {
-      var config = _this.config,
-          el = void 0,
-          date = config.format,
-          newDate = new Date();
-
-      for (var f in _this.scroll) {
-        var d = _this.getSelected(_this.scroll[f]);
-
-        date = date.replace(f, d);
-        if (f == 'YYYY') {
-          newDate.setFullYear(d);
-        } else if (f == 'MM') {
-          newDate.setMonth(d - 1);
-        } else if (f == 'DD') {
-          newDate.setDate(d);
-        } else if (f == 'hh') {
-          newDate.setHours(d);
-        } else if (f == 'mm') {
-          newDate.setMinutes(d);
-        } else if (f == 'ss') {
-          newDate.setSeconds(d);
-        }
-      }
-      if (config.confirm) {
-        var flag = config.confirm.call(_this, date);
-        if (flag === false) {
-          return false;
-        } else if (flag) {
-          date = flag;
-        }
-      }
-      if (config.el) {
-        el = $(config.el);
-        if (el.nodeName.toLowerCase() == 'input') {
-          el.value = date;
-        } else {
-          el.innerText = date;
-        }
-        el.bindDate = newDate;
-      } else {
-        _this.bindDate = newDate;
-      }
-      _this.hide();
-    });
+    _this.tap(confirm, _this.confirmFunc.bind(_this));
   },
   getMonthlyDay: function getMonthlyDay(year, month) {
     var day = void 0;

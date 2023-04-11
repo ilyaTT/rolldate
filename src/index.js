@@ -294,6 +294,52 @@ Rolldate.prototype = {
       _this.destroy(flag);
     }
   },
+  confirmFunc: function(){
+    let _this = this;
+    let config = _this.config,
+      el,
+      date = config.format,
+      newDate = new Date();
+
+    for(let f in _this.scroll){
+      let d = _this.getSelected(_this.scroll[f]);
+
+      date = date.replace(f, d);
+      if(f == 'YYYY'){
+        newDate.setFullYear(d);
+      }else if(f == 'MM'){
+        newDate.setMonth(d-1);
+      }else if(f == 'DD'){
+        newDate.setDate(d);
+      }else if(f == 'hh'){
+        newDate.setHours(d);
+      }else if(f == 'mm'){
+        newDate.setMinutes(d);
+      }else if(f == 'ss'){
+        newDate.setSeconds(d);
+      }
+    }
+    if(config.confirm){
+      let flag = config.confirm.call(_this, date);
+      if(flag === false){
+        return false
+      }else if(flag){
+        date = flag;
+      }
+    }
+    if(config.el){
+      el = $(config.el);
+      if(el.nodeName.toLowerCase() == 'input'){
+        el.value = date;
+      }else{
+        el.innerText = date;
+      }
+      el.bindDate = newDate;
+    }else{
+      _this.bindDate = newDate;
+    }
+    _this.hide();
+  },
   event: function(){
     let _this = this,
       mask = $('.rolldate-mask'),
@@ -306,52 +352,7 @@ Rolldate.prototype = {
     _this.tap(cancel, function(){
       _this.hide(1);
     })
-    _this.tap(confirm, function(){
-      let config = _this.config,
-        el,
-        date = config.format,
-        newDate = new Date();
-
-      for(let f in _this.scroll){
-        let d = _this.getSelected(_this.scroll[f]);
-
-        date = date.replace(f, d);
-        if(f == 'YYYY'){
-          newDate.setFullYear(d);
-        }else if(f == 'MM'){
-          newDate.setMonth(d-1);
-        }else if(f == 'DD'){
-          newDate.setDate(d);
-        }else if(f == 'hh'){
-          newDate.setHours(d);
-        }else if(f == 'mm'){
-          newDate.setMinutes(d);
-        }else if(f == 'ss'){
-          newDate.setSeconds(d);
-        }
-      }
-      if(config.confirm){
-        let flag = config.confirm.call(_this, date);
-        if(flag === false){
-          return false
-        }else if(flag){
-          date = flag;
-        }
-      }
-      if(config.el){
-        el = $(config.el);
-        if(el.nodeName.toLowerCase() == 'input'){
-          el.value = date;
-        }else{
-          el.innerText = date;
-        }
-        el.bindDate = newDate;
-      }else{
-        _this.bindDate = newDate;
-      }
-      _this.hide();
-
-    })
+    _this.tap(confirm, _this.confirmFunc.bind(_this));
   },
   getMonthlyDay: function(year, month){
     let day;
